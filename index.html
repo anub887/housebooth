@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>House Booth</title>
+<meta name="description" content="A free photobooth for your party. No setup. Memories your guests take home.">
+<meta property="og:title" content="House Booth — a free photobooth for your party">
+<meta property="og:description" content="No setup. Memories your guests take home.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Yatra+One&family=Manrope:wght@400;600;800&display=swap">
+<style>
+/* Layout: sunset page, very little text, big photos */
+:root{--ink:#2A1552;--cream:#FFF6EC;--lemon:#FFE27A;--font-display:"Fredoka","Arial Rounded MT Bold",sans-serif;--font-ui:"Manrope","Helvetica Neue",Arial,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--cream);font-family:var(--font-ui);line-height:1.5;font-size:17px;overflow-x:hidden;
+  background:linear-gradient(180deg,#FF9F6E 0%,#FF6F91 26%,#9A5BE8 60%,#2A1552 100%);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding-block:26px 60px}
+a{color:inherit}
+nav{display:flex;justify-content:space-between;align-items:center;font-weight:800;color:var(--ink)}
+nav .logo{font-family:var(--font-display);font-size:24px;text-decoration:none;color:var(--ink)}
+nav a.small{font-size:14px;text-decoration:none;background:rgba(255,255,255,.4);padding:8px 14px;border-radius:999px}
+.hero{padding-block:50px 20px;color:var(--ink);display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:30px}
+@media (max-width:860px){.hero{grid-template-columns:1fr;padding-top:30px}}
+.pill{display:inline-block;background:rgba(255,255,255,.5);font-weight:800;font-size:13px;padding:7px 14px;border-radius:999px;margin-bottom:18px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(46px,6.6vw,84px);line-height:.98;margin:0 0 18px;text-wrap:balance;letter-spacing:-.01em}
+.lede{font-size:clamp(18px,2vw,22px);margin:0 0 26px;max-width:30ch;font-weight:600}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-block;text-decoration:none;border-radius:999px;padding:16px 28px;font-weight:800;font-size:17px;color:#fff;background:var(--ink);box-shadow:0 12px 30px -12px rgba(42,21,82,.6);transition:transform .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn.soft{background:rgba(255,255,255,.55);color:var(--ink);box-shadow:none}
+
+/* real photobooth strips */
+.pile{position:relative;height:640px;justify-self:center;width:min(100%,460px)}
+@media (max-width:860px){.pile{height:560px;transform:scale(.8);transform-origin:top center;margin-bottom:-80px}}
+.strip{position:absolute;width:160px;background:#fff;padding:10px 10px 22px;box-shadow:0 40px 70px -24px rgba(42,21,82,.75);border-radius:3px}
+.strip .ph{aspect-ratio:1/1;margin-bottom:8px;overflow:hidden;background:#222}
+.strip .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.strip.bw .ph img{filter:grayscale(1) contrast(1.2)}
+.strip.warm .ph img{filter:contrast(1.08) saturate(1.3) sepia(.15)}
+.strip .cap{font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-align:center;color:#2A1552;margin-top:12px}
+.strip.dark{background:linear-gradient(180deg,#0A1C36,#2B0F5C)}
+.strip.dark .cap{color:#F6D27A;font-family:"Yatra One",serif;text-transform:none;letter-spacing:0;font-size:18px}
+.s1{left:0;top:50px;transform:rotate(-8deg);animation:f1 7s ease-in-out infinite}
+.s2{left:150px;top:0;transform:rotate(2deg);z-index:2;animation:f2 8s ease-in-out infinite}
+.s3{left:300px;top:70px;transform:rotate(9deg);animation:f3 6.5s ease-in-out infinite}
+@keyframes f1{50%{transform:rotate(-7deg) translateY(-10px)}}
+@keyframes f2{50%{transform:rotate(1deg) translateY(-14px)}}
+@keyframes f3{50%{transform:rotate(10deg) translateY(-8px)}}
+
+section{margin-top:64px}
+h2{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.2vw,46px);margin:0 0 20px;text-wrap:balance;line-height:1.05}
+.wall{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:860px){.wall{grid-template-columns:repeat(2,1fr)}}
+.moment{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 24px 50px -24px rgba(0,0,0,.6);transition:transform .25s}
+.moment:hover{transform:translateY(-6px) rotate(-1deg)}
+.moment img{width:100%;height:100%;object-fit:cover;display:block}
+.moment b{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(255,249,240,.92);color:#2A1552;font-family:var(--font-display);font-weight:600;font-size:15px;line-height:1.15;padding:8px 10px;border-radius:10px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:860px){.three{grid-template-columns:1fr}}
+.card{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:20px;backdrop-filter:blur(8px)}
+.card b{display:block;font-family:var(--font-display);font-weight:600;font-size:22px;margin-bottom:4px}
+.card span{opacity:.92}
+.card i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--lemon);color:var(--ink);font-style:normal;font-weight:800;font-family:var(--font-display);margin-bottom:12px}
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:860px){.themes{grid-template-columns:repeat(2,1fr)}}
+.theme{display:block;text-decoration:none;border-radius:20px;padding:22px 18px;min-height:150px;color:#fff;transition:transform .2s;border:1px solid rgba(255,255,255,.18)}
+.theme:hover{transform:translateY(-4px) rotate(-.5deg)}
+.theme strong{display:block;font-size:28px;line-height:1.1;font-family:var(--font-display);font-weight:700}
+.theme em{display:block;font-style:normal;font-size:14px;margin-top:8px;opacity:.85}
+.theme.diwali{background:linear-gradient(135deg,#0A1C36,#2B0F5C)}.theme.diwali strong{font-family:"Yatra One",serif;color:#F6D27A}
+.theme.party{background:linear-gradient(135deg,#3A0D5E,#120A2A)}.theme.party strong{color:#FF4FA3}
+.theme.birthday{background:linear-gradient(135deg,#5A1A6B,#1C0B2E)}.theme.birthday strong{color:#FFD23F}
+.theme.nye{background:linear-gradient(135deg,#1A1230,#06080F)}.theme.nye strong{color:#F6D27A}
+.story{font-size:19px;max-width:60ch}
+.story p{margin:0 0 10px}
+.end{text-align:center;padding-block:24px 0}
+.end h2{font-size:clamp(34px,5vw,56px);margin-bottom:18px}
+footer{margin-top:54px;padding-top:22px;border-top:1px solid rgba(255,255,255,.2);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;opacity:.85}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<main>
+  <nav><a class="logo" href="./">house booth</a><a class="small" href="#themes">themes</a></nav>
+
+  <div class="hero">
+    <div>
+      <span class="pill">free · no app · no setup</span>
+      <h1>A free photobooth for your party.</h1>
+      <p class="lede">Memories your guests take home. Your laptop on a shelf is all it takes.</p>
+      <div class="cta"><a class="btn" href="booth.html?t=diwali">Open the booth</a><a class="btn soft" href="#how">How it works</a></div>
+    </div>
+    <div class="pile" aria-hidden="true">
+      <div class="strip s1 bw"><div class="ph"><img src="https://images.unsplash.com/photo-1699217007552-1180d9a06bad?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1670450715120-1ea1618f3110?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1699217007718-d799af25caa4?auto=format&w=500&q=70" alt=""></div><div class="cap">House party</div></div>
+      <div class="strip s2 dark warm"><div class="ph"><img src="https://images.unsplash.com/photo-1680459520309-189cf5b22212?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1699730185428-d11054059c7f?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1746564464925-6e2d444f4488?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1666638787411-c5c8ef25d229?auto=format&w=500&q=70" alt=""></div><div class="cap">शुभ दीपावली</div></div>
+      <div class="strip s3 warm"><div class="ph"><img src="https://images.unsplash.com/photo-1609434072354-a653a8d95ef4?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1699217007515-4a04fdec4609?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1699217007718-d799af25caa4?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&w=500&q=70" alt=""></div><div class="cap">Birthday</div></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>The photos people actually keep.</h2>
+    <div class="wall">
+      <div class="moment"><img src="https://images.unsplash.com/photo-1699217007552-1180d9a06bad?auto=format&w=700&q=70" alt=""><b>"Serious passport photo."</b></div>
+      <div class="moment"><img src="https://images.unsplash.com/photo-1680459520309-189cf5b22212?auto=format&w=700&q=70" alt=""><b>"Pretend the phuljhari went out."</b></div>
+      <div class="moment"><img src="https://images.unsplash.com/photo-1670450715120-1ea1618f3110?auto=format&w=700&q=70" alt=""><b>"Dance move. Freeze!"</b></div>
+      <div class="moment"><img src="https://images.unsplash.com/photo-1699730185428-d11054059c7f?auto=format&w=700&q=70" alt=""><b>"Group hug, no excuses."</b></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <h2>No setup. Really.</h2>
+    <div class="three">
+      <div class="card"><i>1</i><b>Laptop on a shelf</b><span>Chin height. A lamp behind it.</span></div>
+      <div class="card"><i>2</i><b>Open a theme</b><span>Allow the webcam once. Full-screen.</span></div>
+      <div class="card"><i>3</i><b>Walk away</b><span>Guests tap, pose, scan their strip.</span></div>
+    </div>
+  </section>
+
+  <section id="themes">
+    <h2>Pick your party.</h2>
+    <div class="themes">
+      <a class="theme diwali" href="booth.html?t=diwali"><strong>शुभ दीपावली</strong><em>Diyas, fireworks, marigold</em></a>
+      <a class="theme party" href="booth.html?t=party"><strong>House Party</strong><em>Confetti, neon, chaos</em></a>
+      <a class="theme birthday" href="booth.html?t=birthday"><strong>Birthday</strong><em>Balloons, candles, cake</em></a>
+      <a class="theme nye" href="booth.html?t=nye"><strong>New Year's Eve</strong><em>Gold, midnight, countdown</em></a>
+    </div>
+  </section>
+
+  <section class="story">
+    <h2>Why this exists.</h2>
+    <p>We wanted a photobooth for our Diwali party. Rentals start at £300. The online ones needed an iPad.</p>
+    <p>So I built this in one evening. First for us, now for your party too. — <a href="https://x.com/anubhav_builds" target="_blank" rel="noopener">Anubhav</a></p>
+  </section>
+
+  <section class="end">
+    <h2>Your party. Your booth.</h2>
+    <a class="btn" href="booth.html?t=diwali">Open the booth</a>
+  </section>
+
+  <footer><span>Free. Photos stay on your laptop unless QR sharing is on, then they're deleted after 24 hours.</span><span>Photos: <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a></span></footer>
+</main>
+<script>
+(function(){var c=document.getElementById("sky"),ctx=c.getContext("2d"),W,H,DPR,parts=[],last=0,pal=["#FFE27A","#FFFFFF","#7FE3CF","#FFB27A"];
+var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function resize(){DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;c.width=W*DPR;c.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);parts=[];for(var i=0;i<40;i++)parts.push({x:Math.random()*W,y:Math.random()*H,r:2+Math.random()*4,vy:-(0.15+Math.random()*0.3),p:Math.random()*6.28,col:pal[i%4]})}
+function frame(t){var dt=Math.min(40,t-last||16);last=t;ctx.clearRect(0,0,W,H);if(reduce)return;
+for(var i=0;i<parts.length;i++){var p=parts[i];p.y+=p.vy*dt/16;p.x+=Math.sin(t*0.001+p.p)*0.2;if(p.y<-10){p.y=H+10;p.x=Math.random()*W}
+ctx.globalAlpha=0.35+0.3*Math.sin(t*0.002+p.p);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill()}ctx.globalAlpha=1;requestAnimationFrame(frame)}
+addEventListener("resize",resize);resize();requestAnimationFrame(frame)})();
+</script>
+</body>
+</html>
