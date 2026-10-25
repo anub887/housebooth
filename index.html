@@ -8,7 +8,7 @@
 <meta property="og:title" content="House Booth — a free photobooth for your party">
 <meta property="og:description" content="No setup. Memories your guests take home.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Yatra+One&family=Manrope:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Yatra+One&family=Creepster&family=Manrope:wght@400;600;800&display=swap">
 <style>
 /* Layout: sunset page, very little text, big photos */
 :root{--ink:#2A1552;--cream:#FFF6EC;--lemon:#FFE27A;--font-display:"Fredoka","Arial Rounded MT Bold",sans-serif;--font-ui:"Manrope","Helvetica Neue",Arial,sans-serif;color-scheme:light}
@@ -65,7 +65,7 @@ h2{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.2vw,46
 .card b{display:block;font-family:var(--font-display);font-weight:600;font-size:22px;margin-bottom:4px}
 .card span{opacity:.92}
 .card i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--lemon);color:var(--ink);font-style:normal;font-weight:800;font-family:var(--font-display);margin-bottom:12px}
-.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.themes{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 @media (max-width:860px){.themes{grid-template-columns:repeat(2,1fr)}}
 .theme{display:block;text-decoration:none;border-radius:20px;padding:22px 18px;min-height:150px;color:#fff;transition:transform .2s;border:1px solid rgba(255,255,255,.18)}
 .theme:hover{transform:translateY(-4px) rotate(-.5deg)}
@@ -75,6 +75,7 @@ h2{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.2vw,46
 .theme.party{background:linear-gradient(135deg,#3A0D5E,#120A2A)}.theme.party strong{color:#FF4FA3}
 .theme.birthday{background:linear-gradient(135deg,#5A1A6B,#1C0B2E)}.theme.birthday strong{color:#FFD23F}
 .theme.nye{background:linear-gradient(135deg,#1A1230,#06080F)}.theme.nye strong{color:#F6D27A}
+.theme.halloween{background:linear-gradient(135deg,#2A0F3A,#0B0712)}.theme.halloween strong{font-family:"Creepster",Impact,sans-serif;color:#FF7A00}
 .story{font-size:19px;max-width:60ch}
 .story p{margin:0 0 10px}
 .end{text-align:center;padding-block:24px 0}
@@ -93,7 +94,7 @@ footer{margin-top:54px;padding-top:22px;border-top:1px solid rgba(255,255,255,.2
       <span class="pill">free · no app · no setup</span>
       <h1>A free photobooth for your party.</h1>
       <p class="lede">Memories your guests take home. Your laptop on a shelf is all it takes.</p>
-      <div class="cta"><a class="btn" href="booth?t=diwali">Open the booth</a><a class="btn soft" href="#how">How it works</a></div>
+      <div class="cta"><a class="btn" href="booth">Open the booth</a><a class="btn soft" href="#how">How it works</a></div>
     </div>
     <div class="pile" aria-hidden="true">
       <div class="strip s1 bw"><div class="ph"><img src="https://images.unsplash.com/photo-1699217007552-1180d9a06bad?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1670450715120-1ea1618f3110?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&w=500&q=70" alt=""></div><div class="ph"><img src="https://images.unsplash.com/photo-1699217007718-d799af25caa4?auto=format&w=500&q=70" alt=""></div><div class="cap">House party</div></div>
@@ -127,7 +128,8 @@ footer{margin-top:54px;padding-top:22px;border-top:1px solid rgba(255,255,255,.2
       <a class="theme diwali" href="booth?t=diwali"><strong>शुभ दीपावली</strong><em>Diyas, fireworks, marigold</em></a>
       <a class="theme party" href="booth?t=party"><strong>House Party</strong><em>Confetti, neon, chaos</em></a>
       <a class="theme birthday" href="booth?t=birthday"><strong>Birthday</strong><em>Balloons, candles, cake</em></a>
-      <a class="theme nye" href="booth?t=nye"><strong>New Year's Eve</strong><em>Gold, midnight, countdown</em></a>
+      <a class="theme nye" href="booth?t=nye"><strong>New Year's Eve</strong><em>Gold fireworks, bubbles, midnight</em></a>
+      <a class="theme halloween" href="booth?t=halloween"><strong>Halloween</strong><em>Bats, ghosts, fog, pumpkins</em></a>
     </div>
   </section>
 
@@ -139,7 +141,7 @@ footer{margin-top:54px;padding-top:22px;border-top:1px solid rgba(255,255,255,.2
 
   <section class="end">
     <h2>Your party. Your booth.</h2>
-    <a class="btn" href="booth?t=diwali">Open the booth</a>
+    <a class="btn" href="booth">Open the booth</a>
   </section>
 
   <footer><span>Free. Photos stay on your laptop unless QR sharing is on, then they're deleted after 24 hours.</span><span>Photos: <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a></span></footer>
