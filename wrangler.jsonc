@@ -1,0 +1,7 @@
+{
+  "name": "housebooth",
+  "main": "worker.js",
+  "compatibility_date": "2025-01-01",
+  "assets": { "directory": "./", "binding": "ASSETS", "not_found_handling": "404-page" },
+  "kv_namespaces": [{ "binding": "STRIPS", "id": "37e62938d08c49b78d43b2ba204dd4c9" }]
+}
