@@ -11,7 +11,7 @@ function newId() {
   return s;
 }
 
-async function upload(request, env) {
+async function upload(request, env, ctx) {
   if (!env.STRIPS) return new Response("Storage not set up", { status: 503 });
   const len = Number(request.headers.get("content-length") || 0);
   if (len <= 0 || len > MAX_BYTES) return new Response("Bad size", { status: 413 });
@@ -23,8 +23,29 @@ async function upload(request, env) {
   if (!isPng && !isJpg) return new Response("Not an image", { status: 400 });
   const key = newId();
   await env.STRIPS.put(key, buf, { expirationTtl: TTL, metadata: { type: isPng ? "image/png" : "image/jpeg", t: Date.now() } });
+  ctx.waitUntil(bump(env).catch(() => {}));
   const url = new URL(request.url);
   return Response.json({ id: key, url: `${url.origin}/s/${key}` });
+}
+
+// Usage counter: how many strips were made, total and per day. No personal data, just numbers.
+async function bump(env) {
+  const day = new Date().toISOString().slice(0, 10);
+  for (const k of ["stats:total", "stats:day:" + day]) {
+    const v = Number((await env.STRIPS.get(k)) || 0) + 1;
+    await env.STRIPS.put(k, String(v));
+  }
+}
+
+async function stats(env) {
+  if (!env.STRIPS) return new Response("Storage not set up", { status: 503 });
+  const total = Number((await env.STRIPS.get("stats:total")) || 0);
+  const days = {};
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days[d] = Number((await env.STRIPS.get("stats:day:" + d)) || 0);
+  }
+  return Response.json({ strips_total: total, strips_by_day: days }, { headers: { "Cache-Control": "no-store" } });
 }
 
 async function strip(key, env) {
@@ -72,14 +93,15 @@ footer{margin-top:34px;font-size:13px;color:#B7A8E3}footer a{color:#F6D27A}
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const p = url.pathname;
     if (p === "/api/upload") {
       if (request.method === "OPTIONS") return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST", "Access-Control-Allow-Headers": "Content-Type" } });
-      if (request.method === "POST") return upload(request, env);
+      if (request.method === "POST") return upload(request, env, ctx);
       return new Response("Method not allowed", { status: 405 });
     }
+    if (p === "/api/stats") return stats(env);
     if (p.startsWith("/s/")) return guest(p.slice(3).split("/")[0], env);
     if (p.startsWith("/strips/")) return strip(p.slice(8).split("/")[0], env);
     return env.ASSETS.fetch(request);
