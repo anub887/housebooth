@@ -168,6 +168,8 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 (function(){
   // QR sharing uses the site's own /api/upload (Cloudflare Pages Function + KV). Off when opened as a local file.
   var UPLOAD_URL = location.protocol === "file:" ? "" : "/api/upload";
+  // Anonymous counters only (no cookies, no IDs): how many times the booth was opened, the camera started, a shoot started.
+  function ping(e){if(!UPLOAD_URL)return;try{var u="/api/ping?e="+e+"&t="+encodeURIComponent(themeKey||"");if(navigator.sendBeacon)navigator.sendBeacon(u);else fetch(u,{method:"POST",keepalive:true}).catch(function(){})}catch(err){}}
 
   var $=function(id){return document.getElementById(id)};
   var q=new URLSearchParams(location.search);
@@ -175,6 +177,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   var picking=!THEMES[q.get("t")];
   var themeKey=picking?"party":q.get("t");
   var T=THEMES[themeKey];
+  if(!picking)ping("open");
   function fill(s){return (s||"").replace("{year}",year).replace("{nextyear}",year+1)}
   var cfg={
     theme:themeKey,
@@ -227,7 +230,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
     if(stream)return Promise.resolve();
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail("This browser can't access the camera. Use Chrome, Edge or Safari.");return Promise.reject()}
     return navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:960},facingMode:"user"},audio:false})
-      .then(function(s){stream=s;video.srcObject=s;$("startRow").hidden=true;$("idleHint").hidden=true;$("camErr").hidden=true;return video.play().catch(function(){})})
+      .then(function(s){stream=s;ping("camera");video.srcObject=s;$("startRow").hidden=true;$("idleHint").hidden=true;$("camErr").hidden=true;return video.play().catch(function(){})})
       .catch(function(e){camFail("Camera blocked ("+(e&&e.name||e)+"). Allow the camera in the address bar, then reload.");throw e});
   }
   function camFail(m){$("camErr").textContent=m;$("camErr").hidden=false}
@@ -261,7 +264,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
   function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
   function runShoot(){
-    if(busy)return;busy=true;shots=[];show("shoot");
+    if(busy)return;busy=true;shots=[];show("shoot");ping("shoot");
     var dots=$("shotDots");dots.innerHTML="";for(var i=0;i<cfg.shots;i++)dots.appendChild(document.createElement("i"));
     var poses=shuffle(T.poses.slice()).slice(0,cfg.shots),seq=Promise.resolve();
     for(var k=0;k<cfg.shots;k++){(function(k){
@@ -296,7 +299,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
       show("result");startIdleCountdown();window.boothBurst&&window.boothBurst(true);
       if(!UPLOAD_URL){$("shareTitle").textContent="Your strip";$("shareHint").textContent="Hit Download, then AirDrop or WhatsApp it. The host can also set up a QR for instant phone pickup.";return}
       $("shareTitle").textContent="Scan to save your strip";$("shareHint").textContent="Saving...";
-      return fetch(UPLOAD_URL,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:blob}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+      return fetch(UPLOAD_URL+"?t="+encodeURIComponent(themeKey||""),{method:"POST",headers:{"Content-Type":"image/jpeg"},body:blob}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
         .then(function(j){var qq=qrcode(0,"M");qq.addData(j.url);qq.make();$("qrBox").innerHTML=qq.createImgTag(6,8);$("qrBox").hidden=false;$("qrBox").querySelector("img").alt="QR code to your strip";
           $("shareHint").textContent="Open your phone camera, point at the code, long-press the image to save. Only this strip was uploaded; it's deleted after 24 hours. Your shots never left this device."})
         .catch(function(){$("shareTitle").textContent="Your strip";$("shareHint").textContent="Couldn't upload for a QR this time. Download works."});
