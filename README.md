@@ -1,6 +1,6 @@
 # House Booth
 
-A free photobooth for your party. Runs in the browser on any laptop with a webcam. No app, no iPad, no setup.
+A free photobooth for your party. Runs in the browser on any laptop, phone or tablet. No app, no sign-up, no setup.
 
 Live: https://housebooth.pages.dev
 
@@ -13,6 +13,8 @@ Live: https://housebooth.pages.dev
   - `POST /api/upload` → `{id, url}`
   - `GET /s/:id` → guest page with the strip
   - `GET /strips/:id.jpg` → the image
+  - `POST /api/ping?e=open|camera|shoot` → anonymous usage counters (no cookies, no IDs)
+  - `GET /api/stats` → funnel totals, last 14 days, per theme
 
 Without the KV binding the booth still works; the result screen offers Download only.
 
