@@ -298,7 +298,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
       $("shareTitle").textContent="Scan to save your strip";$("shareHint").textContent="Saving...";
       return fetch(UPLOAD_URL,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:blob}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
         .then(function(j){var qq=qrcode(0,"M");qq.addData(j.url);qq.make();$("qrBox").innerHTML=qq.createImgTag(6,8);$("qrBox").hidden=false;$("qrBox").querySelector("img").alt="QR code to your strip";
-          $("shareHint").textContent="Open your phone camera, point at the code, long-press the image to save. Link lasts 24 hours."})
+          $("shareHint").textContent="Open your phone camera, point at the code, long-press the image to save. Only this strip was uploaded; it's deleted after 24 hours. Your shots never left this device."})
         .catch(function(){$("shareTitle").textContent="Your strip";$("shareHint").textContent="Couldn't upload for a QR this time. Download works."});
     });
   }
