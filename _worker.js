@@ -23,29 +23,50 @@ async function upload(request, env, ctx) {
   if (!isPng && !isJpg) return new Response("Not an image", { status: 400 });
   const key = newId();
   await env.STRIPS.put(key, buf, { expirationTtl: TTL, metadata: { type: isPng ? "image/png" : "image/jpeg", t: Date.now() } });
-  ctx.waitUntil(bump(env).catch(() => {}));
+  ctx.waitUntil(bump(env, "strip", new URL(request.url).searchParams.get("t") || "").catch(() => {}));
   const url = new URL(request.url);
   return Response.json({ id: key, url: `${url.origin}/s/${key}` });
 }
 
-// Usage counter: how many strips were made, total and per day. No personal data, just numbers.
-async function bump(env) {
+// Anonymous usage counters: booth opened, camera started, shoot started, strip made.
+// Plain numbers in KV, nothing about who. "strip" keeps the original key names.
+const EVENTS = ["open", "camera", "shoot", "strip"];
+const THEMES = ["diwali", "halloween", "party", "birthday", "nye"];
+async function inc(env, k) {
+  const v = Number((await env.STRIPS.get(k)) || 0) + 1;
+  await env.STRIPS.put(k, String(v));
+}
+async function bump(env, e, theme) {
   const day = new Date().toISOString().slice(0, 10);
-  for (const k of ["stats:total", "stats:day:" + day]) {
-    const v = Number((await env.STRIPS.get(k)) || 0) + 1;
-    await env.STRIPS.put(k, String(v));
-  }
+  const base = e === "strip" ? "stats" : "stats:" + e;
+  await inc(env, base + ":total");
+  await inc(env, base + ":day:" + day);
+  if (theme && THEMES.includes(theme)) await inc(env, "stats:" + e + ":theme:" + theme);
+}
+
+async function ping(request, env, ctx) {
+  const url = new URL(request.url);
+  const e = url.searchParams.get("e"), t = url.searchParams.get("t") || "";
+  if (!EVENTS.includes(e) || e === "strip") return new Response("Bad event", { status: 400 });
+  if (env.STRIPS) ctx.waitUntil(bump(env, e, t).catch(() => {}));
+  return new Response(null, { status: 204 });
 }
 
 async function stats(env) {
   if (!env.STRIPS) return new Response("Storage not set up", { status: 503 });
-  const total = Number((await env.STRIPS.get("stats:total")) || 0);
-  const days = {};
+  const get = async (k) => Number((await env.STRIPS.get(k)) || 0);
+  const out = { totals: {}, by_day: {}, strips_by_theme: {}, opens_by_theme: {} };
+  for (const e of EVENTS) {
+    const base = e === "strip" ? "stats" : "stats:" + e;
+    out.totals[e] = await get(base + ":total");
+  }
   for (let i = 0; i < 14; i++) {
     const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-    days[d] = Number((await env.STRIPS.get("stats:day:" + d)) || 0);
+    out.by_day[d] = {};
+    for (const e of EVENTS) out.by_day[d][e] = await get((e === "strip" ? "stats" : "stats:" + e) + ":day:" + d);
   }
-  return Response.json({ strips_total: total, strips_by_day: days }, { headers: { "Cache-Control": "no-store" } });
+  for (const th of THEMES) { out.opens_by_theme[th] = await get("stats:open:theme:" + th); out.strips_by_theme[th] = await get("stats:strip:theme:" + th); }
+  return Response.json(out, { headers: { "Cache-Control": "no-store" } });
 }
 
 async function strip(key, env) {
@@ -102,6 +123,7 @@ export default {
       return new Response("Method not allowed", { status: 405 });
     }
     if (p === "/api/stats") return stats(env);
+    if (p === "/api/ping") return ping(request, env, ctx);
     if (p.startsWith("/s/")) return guest(p.slice(3).split("/")[0], env);
     if (p.startsWith("/strips/")) return strip(p.slice(8).split("/")[0], env);
     return env.ASSETS.fetch(request);
