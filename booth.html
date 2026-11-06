@@ -86,12 +86,26 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 .err{color:#ff8a8a;max-width:560px}
 .pickgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;width:min(1100px,94vw)}
 @media (max-width:900px){.pickgrid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:700px){
+  body{overflow:auto}
+  .screen#result{justify-content:flex-start;padding:12px 0 70px;min-height:100%}
+  .result{flex-direction:column;gap:18px}
+  .result img.strip{height:auto;max-height:52vh;max-width:70vw;width:auto}
+  .share{max-width:92vw}
+  .row button{min-width:44vw}
+  .qr img{width:150px;height:150px}
+  .brand{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:11px;background:rgba(0,0,0,.35);padding:4px 0;pointer-events:none}
+  .brand a{pointer-events:auto}
+  .gear{font-size:12px;padding:6px 10px;top:8px;right:8px}
+  .screen#result{padding-top:56px}
+}
 .pick{border-radius:22px;padding:24px 18px;min-height:160px;text-align:left;color:#fff;background:var(--pbg);box-shadow:none;animation:none;border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
 .pick:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:0 20px 40px -20px #000}
 .pick strong{font-size:28px;line-height:1.05;font-family:var(--pfont);color:var(--pcol)}
 .pick small{font-weight:400;color:rgba(255,255,255,.75);font-size:14px}
 .pick-title{font-family:var(--font-serif);font-size:clamp(30px,5vw,56px);margin:0;color:var(--cream);font-weight:500}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+.link{background:none;border:0;color:inherit;opacity:.75;text-decoration:underline;font:inherit;font-size:14px;padding:6px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -154,7 +168,8 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
         <div class="eyebrow" id="shareTitle">Your strip</div>
         <div class="qr" id="qrBox" hidden></div>
         <p class="hint" id="shareHint"></p>
-        <div class="row"><button id="download">Download</button><button id="again" class="ghost">Go again</button></div>
+        <div class="row"><button id="save" hidden>Save to Photos</button><button id="download">Download</button><button id="sharelink" class="ghost" hidden>Share link</button><button id="again" class="ghost">Go again</button></div>
+        <button id="showqr" class="link" hidden>Friend wants it too? Show QR</button>
         <p class="hint" id="idleCountdown"></p>
       </div>
     </div>
@@ -214,7 +229,10 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   $("cfgClose").addEventListener("click",function(){$("panel").classList.remove("open")});
 
   var screens=["pick","idle","choose","shoot","result"];
-  var video=$("video"), stream=null, filter=T.filters[0], shots=[], busy=false, idleTimer=null, lastBlob=null;
+  var video=$("video"), stream=null, filter=T.filters[0], shots=[], busy=false, idleTimer=null, lastBlob=null, lastUrl=null;
+  // On a phone the booth IS the guest's device, so a QR makes no sense; use the native share sheet (lands in Photos) instead.
+  var IS_PHONE=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Macintosh/.test(navigator.userAgent));
+  var CAN_SHARE_FILES=!!(navigator.share&&navigator.canShare&&(function(){try{return navigator.canShare({files:[new File([new Blob()],"x.jpg",{type:"image/jpeg"})]})}catch(e){return false}})());
   function show(name){screens.forEach(function(s){$(s).hidden=(s!==name)});clearTimeout(idleTimer);$("idleCountdown").textContent=""}
   Object.keys(THEMES).forEach(function(k){var TT=THEMES[k],b=document.createElement("button");b.className="pick";
     b.style.setProperty("--pbg","linear-gradient(135deg,"+TT.colors.bg3+","+TT.colors.bg2+")");b.style.setProperty("--pfont",TT.displayFont);b.style.setProperty("--pcol",TT.colors.gold);
@@ -297,12 +315,17 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
     return new Promise(function(res){c.toBlob(res,"image/jpeg",0.92)}).then(function(blob){
       lastBlob=blob;$("stripImg").src=URL.createObjectURL(blob);$("qrBox").hidden=true;$("qrBox").innerHTML="";
       show("result");startIdleCountdown();window.boothBurst&&window.boothBurst(true);
-      if(!UPLOAD_URL){$("shareTitle").textContent="Your strip";$("shareHint").textContent="Hit Download, then AirDrop or WhatsApp it. The host can also set up a QR for instant phone pickup.";return}
-      $("shareTitle").textContent="Scan to save your strip";$("shareHint").textContent="Saving...";
+      lastUrl=null;$("showqr").hidden=true;$("sharelink").hidden=true;
+      var onPhone=IS_PHONE;
+      $("save").hidden=!(onPhone&&CAN_SHARE_FILES);
+      $("download").hidden=onPhone&&CAN_SHARE_FILES;
+      if(!UPLOAD_URL){$("shareTitle").textContent="Your strip";$("shareHint").textContent=onPhone?"Tap Save to Photos.":"Hit Download, then AirDrop or WhatsApp it. The host can also set up a QR for instant phone pickup.";return}
+      $("shareTitle").textContent=onPhone?"Your strip":"Scan to save your strip";$("shareHint").textContent=onPhone?"Tap Save to Photos, or share the link.":"Saving...";
       return fetch(UPLOAD_URL+"?t="+encodeURIComponent(themeKey||""),{method:"POST",headers:{"Content-Type":"image/jpeg"},body:blob}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-        .then(function(j){var qq=qrcode(0,"M");qq.addData(j.url);qq.make();$("qrBox").innerHTML=qq.createImgTag(6,8);$("qrBox").hidden=false;$("qrBox").querySelector("img").alt="QR code to your strip";
-          $("shareHint").textContent="Open your phone camera, point at the code, long-press the image to save. Only this strip was uploaded; it's deleted after 24 hours. Your shots never left this device."})
-        .catch(function(){$("shareTitle").textContent="Your strip";$("shareHint").textContent="Couldn't upload for a QR this time. Download works."});
+        .then(function(j){lastUrl=j.url;var qq=qrcode(0,"M");qq.addData(j.url);qq.make();$("qrBox").innerHTML=qq.createImgTag(6,8);$("qrBox").querySelector("img").alt="QR code to your strip";
+          if(onPhone){$("qrBox").hidden=true;$("showqr").hidden=false;$("sharelink").hidden=false;$("shareHint").textContent="Save to Photos, or share the link (it lasts 24 hours, then the strip is deleted). Your shots never left this phone."}
+          else{$("qrBox").hidden=false;$("shareHint").textContent="Open your phone camera, point at the code, long-press the image to save. Only this strip was uploaded; it's deleted after 24 hours. Your shots never left this device."}})
+        .catch(function(){$("shareTitle").textContent="Your strip";$("shareHint").textContent=onPhone?"Couldn't make a share link this time. Save to Photos works.":"Couldn't upload for a QR this time. Download works."});
     });
   }
   function startIdleCountdown(){var left=cfg.idleAfter,el=$("idleCountdown");function tick(){el.textContent=left<=15?"Back to start in "+left+"s":"";if(left<=0){show("idle");return}left--;idleTimer=setTimeout(tick,1000)}tick()}
@@ -313,6 +336,12 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   $("go").addEventListener("click",runShoot);
   $("backIdle").addEventListener("click",function(){show("idle")});
   $("again").addEventListener("click",function(){show("choose");previewFilters()});
+  $("save").addEventListener("click",function(){if(!lastBlob)return;var f=new File([lastBlob],themeKey+"-strip-"+Date.now()+".jpg",{type:"image/jpeg"});
+    navigator.share({files:[f],title:"My photo strip"}).catch(function(e){if(e&&e.name==="AbortError")return;window.open(URL.createObjectURL(lastBlob),"_blank");$("shareHint").textContent="Long-press the image and choose Save."})});
+  $("sharelink").addEventListener("click",function(){if(!lastUrl)return;var msg="my photo strip from the party 📸 "+lastUrl;
+    if(navigator.share){navigator.share({title:"My photo strip",text:msg,url:lastUrl}).catch(function(){})}
+    else if(navigator.clipboard){navigator.clipboard.writeText(lastUrl).then(function(){$("shareHint").textContent="Link copied. It lasts 24 hours."})}});
+  $("showqr").addEventListener("click",function(){$("qrBox").hidden=!$("qrBox").hidden;$("showqr").textContent=$("qrBox").hidden?"Friend wants it too? Show QR":"Hide QR"});
   $("download").addEventListener("click",function(){if(!lastBlob)return;var a=document.createElement("a");a.href=URL.createObjectURL(lastBlob);a.download=themeKey+"-strip-"+Date.now()+".jpg";document.body.appendChild(a);a.click();a.remove()});
   document.addEventListener("keydown",function(e){
     if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;
