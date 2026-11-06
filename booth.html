@@ -266,7 +266,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   var grainCanvas=(function(){var c=document.createElement("canvas");c.width=c.height=256;var x=c.getContext("2d");var d=x.createImageData(256,256);
     for(var i=0;i<d.data.length;i+=4){var v=128+Math.round((Math.random()-0.5)*160);d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255}x.putImageData(d,0,0);return c})();
   // Safari on iPhone/iPad has no canvas filter support, so the same look is done per pixel there.
-  var HAS_CANVAS_FILTER=(function(){try{var c=document.createElement("canvas").getContext("2d");c.filter="grayscale(1)";return c.filter==="grayscale(1)"}catch(e){return false}})();
+  var HAS_CANVAS_FILTER=(function(){try{var c=document.createElement("canvas");c.width=c.height=1;var x=c.getContext("2d");x.filter="grayscale(1)";x.fillStyle="#f00";x.fillRect(0,0,1,1);var p=x.getImageData(0,0,1,1).data;return p[0]===p[1]&&p[1]===p[2]}catch(e){return false}})();
   function applyPixelFilter(ctx,W,H,f){
     var img=ctx.getImageData(0,0,W,H),d=img.data,i,r,g,bl,l;
     if(f===FILTERS.vintage){for(i=0;i<d.length;i+=4){l=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];l=(l-128)*1.18+128;l=l*1.04;d[i]=d[i+1]=d[i+2]=l<0?0:l>255?255:l}}
